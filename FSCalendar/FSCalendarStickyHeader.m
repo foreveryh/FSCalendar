@@ -13,10 +13,13 @@
 #import "FSCalendarConstance.h"
 #import "FSCalendarDynamicHeader.h"
 
+#define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
+
 @interface FSCalendarStickyHeader ()
 
 @property (weak, nonatomic) UIView *contentView;
-@property (weak, nonatomic) UIView *separator;
+@property (weak, nonatomic) UIView *leftSeparator;
+@property (weak, nonatomic) UIView *rightSeparator;
 
 @property (strong, nonatomic) NSDateFormatter *dateFormatter;
 
@@ -49,20 +52,26 @@
         label.numberOfLines = 0;
         [_contentView addSubview:label];
         self.titleLabel = label;
+        /* modified by GP */
+        view = [[UIView alloc] initWithFrame:CGRectZero];
+        view.backgroundColor = UIColorFromRGB(0xeeeeee);
+        [_contentView addSubview:view];
+        self.leftSeparator = view;
         
         view = [[UIView alloc] initWithFrame:CGRectZero];
-        view.backgroundColor = [[UIColor lightGrayColor] colorWithAlphaComponent:0.25];
+        view.backgroundColor = _leftSeparator.backgroundColor;
         [_contentView addSubview:view];
-        self.separator = view;
-        
-        NSMutableArray *weekdayLabels = [NSMutableArray arrayWithCapacity:7];
-        for (int i = 0; i < 7; i++) {
-            label = [[UILabel alloc] initWithFrame:CGRectZero];
-            label.textAlignment = NSTextAlignmentCenter;
-            [_contentView addSubview:label];
-            [weekdayLabels addObject:label];
-        }
-        self.weekdayLabels = weekdayLabels.copy;
+        self.rightSeparator = view;
+    
+//        NSMutableArray *weekdayLabels = [NSMutableArray arrayWithCapacity:7];
+//        for (int i = 0; i < 7; i++) {
+//            label = [[UILabel alloc] initWithFrame:CGRectZero];
+//            label.textAlignment = NSTextAlignmentCenter;
+//            [_contentView addSubview:label];
+//            [weekdayLabels addObject:label];
+//        }
+//        self.weekdayLabels = weekdayLabels.copy;
+        /*******************/
     }
     return self;
 }
@@ -84,17 +93,28 @@
             CGFloat weekdayWidth = self.fs_width / 7.0;
             CGFloat weekdayHeight = _calendar.preferedWeekdayHeight;
             CGFloat weekdayMargin = weekdayHeight * 0.1;
-            CGFloat titleWidth = _contentView.fs_width;
+      
+            /* remove by GP */
+//            CGFloat titleWidth = _contentView.fs_width;
+//            [_weekdayLabels enumerateObjectsUsingBlock:^(UILabel *label, NSUInteger index, BOOL *stop) { \
+//                label.frame = CGRectMake(index*weekdayWidth, _contentView.fs_height-weekdayHeight-weekdayMargin, weekdayWidth, weekdayHeight);
+//            }];
+            /*****************/
             
-            [_weekdayLabels enumerateObjectsUsingBlock:^(UILabel *label, NSUInteger index, BOOL *stop) { \
-                label.frame = CGRectMake(index*weekdayWidth, _contentView.fs_height-weekdayHeight-weekdayMargin, weekdayWidth, weekdayHeight);
-            }];
+            /* add by GP */
             
+            CGFloat separatorWidth = 75.0;
+          
+           /*****************/
 #define m_calculate \
-        CGFloat titleHeight = [@"1" sizeWithAttributes:@{NSFontAttributeName:[UIFont systemFontOfSize:_appearance.titleTextSize]}].height*1.5 + weekdayMargin*3;
+        CGFloat titleHeight = [@"1" sizeWithAttributes:@{NSFontAttributeName:[UIFont systemFontOfSize:_appearance.titleTextSize]}].height*1.5 + weekdayMargin*3;\
+        CGFloat titleWidth = [_titleLabel.text sizeWithAttributes:@{NSFontAttributeName:[UIFont systemFontOfSize:_appearance.titleTextSize]}].width;
             
 #define m_adjust \
-        _separator.frame = CGRectMake(0, _contentView.fs_height-weekdayHeight-weekdayMargin*2, _contentView.fs_width, 1.0); \
+        CGFloat leftX = _contentView.fs_width/2 - titleWidth/2 - 10.0 - separatorWidth;\
+        CGFloat rightX = _contentView.fs_width/2 + titleWidth/2 + 10.0;\
+        _leftSeparator.frame = CGRectMake(leftX, _contentView.fs_height-weekdayHeight-weekdayMargin*2, separatorWidth, 1);\
+        _rightSeparator.frame = CGRectMake(rightX, _contentView.fs_height-weekdayHeight-weekdayMargin*2, separatorWidth, 1);\
         _titleLabel.frame = CGRectMake(0, _separator.fs_bottom-titleHeight-weekdayMargin, titleWidth,titleHeight);
             
             if (_calendar.ibEditing) {
@@ -123,15 +143,16 @@
 
 - (void)reloadData
 {
-    BOOL useVeryShortWeekdaySymbols = (_appearance.caseOptions & (15<<4) ) == FSCalendarCaseOptionsWeekdayUsesSingleUpperCase;
-    NSArray *weekdaySymbols = useVeryShortWeekdaySymbols ? _calendar.calendar.veryShortStandaloneWeekdaySymbols : _calendar.calendar.shortStandaloneWeekdaySymbols;
-    BOOL useDefaultWeekdayCase = (_appearance.caseOptions & (15<<4) ) == FSCalendarCaseOptionsWeekdayUsesDefaultCase;
-    [_weekdayLabels enumerateObjectsUsingBlock:^(UILabel *label, NSUInteger index, BOOL *stop) {
-        index += _calendar.firstWeekday-1;
-        index %= 7;
-        label.text = useDefaultWeekdayCase ? weekdaySymbols[index] : [weekdaySymbols[index] uppercaseString];
-    }];
-
+    /** remove by GP **/
+//    BOOL useVeryShortWeekdaySymbols = (_appearance.caseOptions & (15<<4) ) == FSCalendarCaseOptionsWeekdayUsesSingleUpperCase;
+//    NSArray *weekdaySymbols = useVeryShortWeekdaySymbols ? _calendar.calendar.veryShortStandaloneWeekdaySymbols : _calendar.calendar.shortStandaloneWeekdaySymbols;
+//    BOOL useDefaultWeekdayCase = (_appearance.caseOptions & (15<<4) ) == FSCalendarCaseOptionsWeekdayUsesDefaultCase;
+//    [_weekdayLabels enumerateObjectsUsingBlock:^(UILabel *label, NSUInteger index, BOOL *stop) {
+//        index += _calendar.firstWeekday-1;
+//        index %= 7;
+//        label.text = useDefaultWeekdayCase ? weekdaySymbols[index] : [weekdaySymbols[index] uppercaseString];
+//    }];
+    /******************/
     _dateFormatter.dateFormat = _appearance.headerDateFormat;
     _dateFormatter.locale = self.calendar.locale;
     BOOL usesUpperCase = (_appearance.caseOptions & 15) == FSCalendarCaseOptionsHeaderUsesUpperCase;
@@ -143,11 +164,13 @@
 - (void)reloadAppearance
 {
     _titleLabel.font = [UIFont systemFontOfSize:self.appearance.headerTitleTextSize];
-    _titleLabel.textColor = self.appearance.headerTitleColor;
-    [_weekdayLabels enumerateObjectsUsingBlock:^(UILabel *label, NSUInteger index, BOOL *stop) {
-        label.font = [UIFont systemFontOfSize:self.appearance.weekdayTextSize];
-        label.textColor = self.appearance.weekdayTextColor;
-    }];
+    _titleLabel.textColor = UIColorFromRGB(0xc4c4c4); // self.appearance.headerTitleColor;
+    /** remove by GP **/
+//    [_weekdayLabels enumerateObjectsUsingBlock:^(UILabel *label, NSUInteger index, BOOL *stop) {
+//        label.font = [UIFont systemFontOfSize:self.appearance.weekdayTextSize];
+//        label.textColor = self.appearance.weekdayTextColor;
+//    }];
+    /******************/
 }
 
 @end

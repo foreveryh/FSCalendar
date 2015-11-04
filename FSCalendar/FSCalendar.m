@@ -58,6 +58,7 @@
 @property (weak  , nonatomic) UIView                     *daysContainer;
 @property (weak  , nonatomic) CAShapeLayer               *maskLayer;
 @property (weak  , nonatomic) UIView                     *topBorder;
+@property (weak  , nonatomic) UIView                     *middleBorder;
 @property (weak  , nonatomic) UIView                     *bottomBorder;
 @property (weak  , nonatomic) FSCalendarCollectionView   *collectionView;
 @property (weak  , nonatomic) FSCalendarFlowLayout       *collectionViewLayout;
@@ -220,6 +221,11 @@
     [self addSubview:view];
     self.bottomBorder = view;
     
+    view = [[UIView alloc] initWithFrame:CGRectZero];
+    view.backgroundColor = _topBorder.backgroundColor;
+    [contentView addSubview:view];
+    self.middleBorder = view;
+    
     [self invalidateLayout];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(orientationDidChange:) name:UIDeviceOrientationDidChangeNotification object:nil];
@@ -287,6 +293,10 @@
                 }
             }
         } else {
+            /* Add by GP*/
+            _middleBorder.frame = CGRectMake(0, kFSCalendarDefaultWeekHeight, _contentView.fs_width, 1);
+            _collectionViewLayout.headerReferenceSize = CGSizeMake(_contentView.fs_width, self.preferedHeaderHeight);
+            /************/
             CGFloat contentHeight = _contentView.fs_height;
             _daysContainer.frame = CGRectMake(0, 0, self.fs_width, contentHeight);
             _collectionView.frame = _daysContainer.bounds;
@@ -443,11 +453,13 @@
             stickyHeader.month = [_minimumDate fs_dateByAddingMonths:indexPath.section].fs_dateByIgnoringTimeComponents.fs_firstDayOfMonth;
             [stickyHeader setNeedsLayout];
             NSArray *allKeys = [_stickyHeaderMapTable.dictionaryRepresentation allKeysForObject:stickyHeader];
-            if (allKeys.count) {
-                [allKeys enumerateObjectsUsingBlock:^(NSIndexPath *indexPath, NSUInteger idx, BOOL *stop) {
-                    [_stickyHeaderMapTable removeObjectForKey:indexPath];
-                }];
-            }
+            /* remove by GP */
+//            if (allKeys.count) {
+//                [allKeys enumerateObjectsUsingBlock:^(NSIndexPath *indexPath, NSUInteger idx, BOOL *stop) {
+//                    [_stickyHeaderMapTable removeObjectForKey:indexPath];
+//                }];
+//            }
+            /****************/
             [_stickyHeaderMapTable setObject:stickyHeader forKey:indexPath];
             return stickyHeader;
         }
@@ -1488,11 +1500,12 @@
         if (_header) {
             [_header removeFromSuperview];
         }
-        if (_weekdays.count) {
-            [_weekdays makeObjectsPerformSelector:@selector(removeFromSuperview)];
-            [_weekdays removeAllObjects];
-        }
-        
+        /* removed by GP */
+//        if (_weekdays.count) {
+//            [_weekdays makeObjectsPerformSelector:@selector(removeFromSuperview)];
+//            [_weekdays removeAllObjects];
+//        }
+        /*****************/
         _collectionView.pagingEnabled = NO;
         _collectionViewLayout.scrollDirection = UICollectionViewScrollDirectionVertical;
         
@@ -1577,6 +1590,9 @@
                 NSDate *month = [_minimumDate.fs_firstDayOfMonth fs_dateByAddingMonths:indexPath.section].fs_dateByIgnoringTimeComponents;
                 cell.dateIsPlaceholder = ![cell.date fs_isEqualToDateForMonth:month] || ![self isDateInRange:cell.date];
                 if (cell.dateIsPlaceholder) {
+                    /* Add by GP */
+                    cell.alpha = 0
+                    /*************/
                     cell.dateIsSelected &= _pagingEnabled;
                     cell.dateIsToday &= _pagingEnabled;
                 }

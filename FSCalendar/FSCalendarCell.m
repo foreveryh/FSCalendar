@@ -83,6 +83,9 @@
                                         diameter,
                                         diameter);
     _backgroundLayer.borderWidth = 1.0;
+    /* Add by GP*/
+    _backgroundLayer.lineWidth = 3.0;
+    /************/
     _backgroundLayer.borderColor = [UIColor clearColor].CGColor;
     
     CGFloat eventSize = _backgroundLayer.frame.size.height/6.0;
